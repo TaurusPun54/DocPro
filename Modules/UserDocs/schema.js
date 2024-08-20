@@ -33,7 +33,7 @@ UserDocsSchema.virtual('questions', {
   localField: 'DocType',
   foreignField: 'DocType',
   justOne: false,
-  options: { select: '-_id -DocType type question answer order' },
+  options: { select: '-_id -DocType type question answer expected shape order' },
   // match: { active: true }
 })
 

@@ -42,7 +42,11 @@ const userSchema = new Schema({
   },
   info: {
     type: Object,
-    default: {},
+    default: {
+      name: '',
+      dob: '',
+      gender: ''
+    },
   },
   role: {
     type: String,

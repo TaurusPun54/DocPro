@@ -45,11 +45,48 @@ const getUserData = async (req) => {
 
 const updateUserInfo = async (req) => {
   const { id } = req.user;
-  const { info } = req.body;
-  if (!id || !info) return new ClientError.BadRequestError('Missing data for update');
-  const update = await User.findByIdAndUpdate(id, { $set: { info: info } });
+  const { payload } = req.body;
+  if (!id || !payload) return new ClientError.BadRequestError('Missing data for update');
+  const update = await User.findByIdAndUpdate(id, { $set: { info: payload } });
   if (update) return { message: 'user info updated' };
   return new ServerError.InternalServerError('update fail, try again');
+}
+
+const updateUserInfoByPatch = async (req) => {
+  const { id } = req.user;
+  const { payload } = req.body;
+  if (!id || !payload) return new ClientError.BadRequestError('Missing data for update');
+  const keys = Object.keys(payload);
+  const user = await User.findById(id);
+  if (!user) return new ClientError.NotFoundError('User not found');
+  for (const prop of keys) {
+    const updateField = {};
+    updateField[`info.${prop}`] = payload[prop];
+
+    const update = await User.findByIdAndUpdate(id, { $set: updateField });
+
+    if (!update) {
+      throw new ServerError.InternalServerError('Update failed, please try again');
+    }
+  }
+};
+
+const changePassword = async (req) => {
+  const { id } = req.user;
+  const { payload } = req.body;
+  if (!id || !payload) return new ClientError.BadRequestError('Cannot change password');
+
+  const { currentPassword, newPassword } = payload;
+  if (!currentPassword || !newPassword) return new ClientError.BadRequestError('Password required');
+
+  const user = await User.findById(id, { active: true }).select('password');
+  const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!passwordMatch) return new ClientError.UnauthorizedError('Password not match');
+
+  const newpassword = await bcrypt.hash(newPassword, 10);
+  const changePasswordSuccess = await User.findByIdAndUpdate(id, { $set: { password: newpassword } });
+  if (changePasswordSuccess) return { message: 'Password changed' };
+  return new ServerError.InternalServerError('change password fail, please try again');
 }
 
 const deleteUser = async (req) => {
@@ -143,6 +180,8 @@ module.exports = {
   login,
   logout,
   updateUserInfo,
+  updateUserInfoByPatch,
+  changePassword,
   deleteUser,
   checkEmailAvailable,
   getUserData

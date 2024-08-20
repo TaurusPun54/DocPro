@@ -9,6 +9,8 @@ const Auth = require('../../lib/Auth/accessTokenAuth');
 // controllers
 const userController = require('./controller');
 
+const RefreshRotation = require('../../lib/Auth/refreshTokenRotation');
+
 const warpper = require('../../lib/Wrapper/wrapper');
 
 // sign up
@@ -26,7 +28,16 @@ router.get('/', Auth.AccAuth, warpper(userController.getUserData));
 // update user
 router.put('/', Auth.AccAuth, warpper(userController.updateUserInfo));
 
+// update user by patch
+router.patch('/', Auth.AccAuth, warpper(userController.updateUserInfoByPatch));
+
+// edit password
+router.patch('/editpassword', Auth.AccAuth, warpper(userController.changePassword));
+
 // delete user
 router.delete('/', Auth.AccAuth, warpper(userController.deleteUser));
+
+// refresh token rotation
+router.get('/refreshTokenRotation', warpper(RefreshRotation));
 
 module.exports = router;

@@ -36,13 +36,13 @@ const createNewDoc = async (req) => {
 };
 
 const getDoc = async (req) => {
-  const { type } = req.query;
-  if (!type) {
+  const { documentTypeId } = req.query;
+  if (!documentTypeId) {
     const docs = await DocumentType.find({ active: true });
     return { docs };
   }
   // if (!type) return new ClientError.BadRequestError('Cannot get without doc id');
-  const docData = await DocumentType.findOne({ type: type, active: true }).populate('questions');
+  const docData = await DocumentType.findOne({ _id: documentTypeId, active: true }).populate('questions');
   if (!docData) return new ClientError.NotFoundError('Document not found');
   const questions = docData.questions
   // console.log(questions);
