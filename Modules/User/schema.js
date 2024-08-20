@@ -1,0 +1,104 @@
+/* eslint-disable max-len */
+const { Schema, model } = require('mongoose');
+const validator = require('../../lib/Validator/validator');
+
+// eslint-disable-next-line no-unused-vars
+const ClientErrors = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
+const ServerErrors = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
+
+// const UserSchema = new Schema(
+//   {
+//     email: { type: String, required: true, unique: true, immutable: true },
+//     password: { type: String, required: true },
+//     info: { type: Object },
+//     StripeCustomerId: {
+//       type: String,
+//       default: '',
+//       validate: {
+//         validator: function(id) {
+//           if (validator.isValidStripeCustomerId(id) && !this.isModified('StripeCustomerId')) return true;
+//           return false;
+//         },
+//         message: 'Changes to customer Id is not allowed.'
+//       }
+//     },
+//     refreshToken: { type: String, default: '' },
+//     active: { type: Boolean, default: true },
+//   }, 
+//   { timestamps: true },
+// );
+
+const userSchema = new Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    immutable: true
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false
+  },
+  info: {
+    type: Object,
+    default: {},
+  },
+  role: {
+    type: String,
+    default: 'user',
+    enum: ['user', 'admin'],
+    immutable: true
+  },
+  stripeCustomerId: {
+    type: String,
+    default: '',
+    validate: {
+      validator: function(id) {
+        if (id !== '') return validator.isValidStripeCustomerId(id);
+      },
+      message: 'Invalid Stripe Customer ID or changes are not allowed.'
+    },
+    select: false
+  },
+  refreshToken: {
+    type: String,
+    default: '',
+    select: false
+  },
+  active: {
+    type: Boolean,
+    default: true
+  }
+}, { timestamps: true });
+
+userSchema.virtual('docs', {
+  ref: 'UserDoc',
+  localField: '_id',
+  foreignField: 'UserId',
+  options: { select: '-DocType' }
+})
+
+userSchema.pre('save', function(next) {
+  if (this.isNew) {
+    this.stripeCustomerId = '';
+  }
+  next();
+});
+
+userSchema.post('validate', function(doc) {
+  if (doc.isModified('stripeCustomerId')) {
+    doc.stripeCustomerId = this._original.stripeCustomerId;
+  }
+});
+
+userSchema.methods.updateInfo = async function(newInfo) {
+    Object.keys(newInfo).forEach((key) => {
+      this[key] = newInfo[key];
+    });
+    const updated =  await this.save();
+    if(updated) return { message: 'User info updated' };
+    return new ServerErrors.InternalServerError('Unknown error, cannot update user info');
+}
+
+module.exports = model('User', userSchema);
