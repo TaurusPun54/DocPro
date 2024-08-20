@@ -7,13 +7,13 @@ const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors
 const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
 
 const createNewQuestion = async (payload) => { //payload is object
-  const requiredKeys = ['type', 'question', 'answer', 'DocType', 'order'];
+  const requiredKeys = ['type', 'question', 'options', 'DocType', 'order'];
 
   const incomeKeys = Object.keys(payload);
   const missingKeys = requiredKeys.filter((field) => !incomeKeys.includes(field));
   if (missingKeys.length > 0) return new ClientError.BadRequestError(`Missing required data: ${missingKeys.join(', ')}`);
 
-  const { type, question, answer, expected, DocType, order } = payload;
+  const { type, question, options, expected, DocType, order } = payload;
   let shape;
   let newQuestion;
   if (expected && type === 'radio') {
@@ -48,7 +48,7 @@ const createNewQuestion = async (payload) => { //payload is object
         type: "array",
         minLength: 1,
         maxLength: 1,
-        items: [{ type: "string", enum: answer, nullable: false }],
+        items: [{ type: "string", enum: options, nullable: false }],
         nullable: false,
       };
     }
@@ -56,8 +56,8 @@ const createNewQuestion = async (payload) => { //payload is object
       shape = {
         type: "array",
         minLength: 1,
-        maxLength: answer.length,
-        items: [{ type: "string", enum: answer, nullable: false }],
+        maxLength: options.length,
+        items: [{ type: "string", enum: options, nullable: false }],
         nullable: false,
       };
     }
@@ -83,7 +83,7 @@ const createNewQuestion = async (payload) => { //payload is object
   newQuestion = new Question({
     type,
     question,
-    answer,
+    options,
     expected: expected ?? '',
     shape,
     DocType,

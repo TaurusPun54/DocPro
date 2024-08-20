@@ -2,14 +2,14 @@
 const {
   Schema,
   model,
-  Types: { ObjectId, Mixed }
+  Types: { ObjectId }
 } = require('mongoose');
 
 const QuestionSchema = new Schema(
   {
     type: { type: String, enum: ['text', 'mc', 'checkbox', 'radio', 'number', 'date', 'textbox'], required: true, immutable: true},
     question: { type: String, required: true, immutable: true},
-    answer: { type: [{ type: String }], required: true, immutable: true },
+    options: { type: [{ type: String }], required: true, immutable: true },
     expected: { type: String, immutable: true },
     // only for 'Y/N' type, expect to get 'Yes' ot 'No'
     shape: { type: Object, required: true, immutable: true },
