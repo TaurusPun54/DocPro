@@ -2,7 +2,7 @@
 const {
   Schema,
   model,
-  Types: { ObjectId }
+  Types: { ObjectId, Mixed }
 } = require('mongoose');
 
 const QuestionSchema = new Schema(

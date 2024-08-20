@@ -13,6 +13,9 @@ const RefreshRotation = require('../../lib/Auth/refreshTokenRotation');
 
 const warpper = require('../../lib/Wrapper/wrapper');
 
+// check email valid
+router.post('/checkEmail', warpper(userController.checkEmailAvailable));
+
 // sign up
 router.post('/signup', warpper(userController.register));
 

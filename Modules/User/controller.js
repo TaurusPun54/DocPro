@@ -14,11 +14,15 @@ const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors
 const jwt = require('../../lib/Auth/jwt');
 
 const checkEmailAvailable = async (req) => {
-  const { email } = req.params;
-  if (!email) return false;
+  const { payload } = req.body;
+  if (!payload) return new ClientError.BadRequestError('email not valid');
+  const { email } = payload;
+  if (!email) return new ClientError.BadRequestError('email not valid');
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  if (!emailRegex.test(email)) return new ClientError.BadRequestError('email not valid');;
   const emailInUsed = await User.findOne({ email, active: true });
-  if (emailInUsed) return false;
-  return true;
+  if (emailInUsed) return new ClientError.BadRequestError('email not valid');
+  return { message: 'email ok' };
 }
 
 const getUserData = async (req) => {
@@ -155,8 +159,8 @@ const login = async (req, res) => {
       customerId: userExist.StripeCustomerId ?? '',
       email: userExist.email,
       info: userExist.info,
-      accesstoken: acctoken,
-      refreshtoken: reftoken
+      accessToken: acctoken,
+      refreshToken: reftoken
     }
     // res.cookie('user', { acctoken, reftoken }, { maxAge: 900000, httpOnly: true });
     return {
