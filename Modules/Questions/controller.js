@@ -16,7 +16,7 @@ const createNewQuestion = async (payload) => { //payload is object
   const { type, question, answer, expected, DocType, order } = payload;
   let shape;
   let newQuestion;
-  if (expected && type === 'Y/N') {
+  if (expected && type === 'radio') {
     shape = {
       type: "array",
       minLength: 1,
@@ -34,7 +34,16 @@ const createNewQuestion = async (payload) => { //payload is object
         nullable: false,
       };
     }
-    if (type === 'mc' || type === 'Y/N') {
+    if (type === 'textbox') {
+      shape = {
+        type: "array",
+        minLength: 1,
+        maxLength: 10,
+        items: [{ type: "string", maxLength: 1000, nullable: false }],
+        nullable: false,
+      };
+    }
+    if (type === 'mc' || type === 'radio') {
       shape = {
         type: "array",
         minLength: 1,
@@ -52,7 +61,7 @@ const createNewQuestion = async (payload) => { //payload is object
         nullable: false,
       };
     }
-    if (type === 'num') {
+    if (type === 'number') {
       shape = {
         type: "array",
         minLength: 1,
