@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const { Schema, model } = require('mongoose');
-// const validator = require('../../lib/Validator/validator');
+const validator = require('../../lib/Validator/validator');
 
 // eslint-disable-next-line no-unused-vars
 const ClientErrors = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
@@ -58,14 +58,16 @@ const userSchema = new Schema({
   stripeCustomerId: {
     type: String,
     default: '',
-    select: false
+    select: false,
+    validate: {
+      validator: function (value) {
+        if (this.stripeCustomerId === '' && validator.isValidStripeCustomerId(value)) return true;
+        if (this.stripeCustomerId !== '') return false;
+        return false;
+      },
+      message: 'stripeCustomerId cannot be updated'
+    }
   },
-  // validate: {
-  //   validator: function(id) {
-  //     if (id !== '') return validator.isValidStripeCustomerId(id);
-  //   },
-  //   message: 'Invalid Stripe Customer ID or changes are not allowed.'
-  // },
   refreshToken: {
     type: String,
     default: '',
@@ -85,10 +87,8 @@ userSchema.virtual('docs', {
 })
 
 // userSchema.pre('save', function(next) {
-//   if (this.isNew) {
-//     this.stripeCustomerId = '';
-//   }
-//   else if (this.stripeCustomerId !== '') {
+//   if (this.isModified('stripeCustomerId')) {
+//     const updatedStripeCustomerId = this.get('stripeCustomerId'); // Get the updating value
 //     return next(new ClientErrors.ForbiddenError('Cannot update stripeCustomerId.'));
 //   }
 //   next();

@@ -13,7 +13,7 @@ const paymentIntentSchema = new Schema({
   userDocId: { type: String, required: true, immutable: true},
   amount: { type: Decimal128, required: true, immutable: true },
   currency: { type: String, required: true, immutable: true },
-  status: { type: String, immutable: true }
+  status: { type: String }
 });
 
 module.exports = model('PaymentIntent', paymentIntentSchema);
