@@ -53,6 +53,8 @@ const getUserData = async (req) => {
   // console.log(editable)
   const output = { ...data._doc };
   output.userDocs = {
+    totalUserDocsCount: editable.length + completed.length + paid.length,
+    paidUserDocsCount: paid.length,
     editable,
     completed,
     paid
