@@ -39,7 +39,30 @@ const getDoc = async (req) => {
   const { documentTypeId } = req.query;
   if (!documentTypeId) {
     const docs = await DocumentType.find({ active: true });
-    return { docs };
+    if (docs.length > 1) {
+      const items = docs.map((doc) => {
+        return {
+          _id: doc._id,
+          name: doc.type,
+          description: doc.description ?? '',
+          price: doc.price,
+          currency: doc.currency,
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt
+        }
+      });
+      return { items };
+    }
+    return { data: [{
+          _id: docs[0]._id,
+          name: docs[0].type,
+          description: docs[0].description ?? '',
+          price: docs[0].price,
+          currency: docs[0].currency,
+          createdAt: docs[0].createdAt,
+          updatedAt: docs[0].updatedAt
+    }] }
+    // return { docs };
   }
   // if (!type) return new ClientError.BadRequestError('Cannot get without doc id');
   const docData = await DocumentType.findOne({ _id: documentTypeId, active: true }).populate('questions');

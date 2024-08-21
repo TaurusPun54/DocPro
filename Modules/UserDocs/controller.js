@@ -9,15 +9,22 @@ const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors
 
 const createNewUserDoc = async (req) => {
   const { id } = req.user;
-  const { DocType, docName, payload } = req.body;
-  if (!payload || !DocType) return new ClientError.BadRequestError('Cannot create new draft');
-  const docExist = await DocumentType.findOne({ type: DocType });
-  if (!docExist) return new ClientError.BadRequestError('Not such doc type found')
+  const { payload } = req.body;
+
+  const requiredKeys = ['DocumentTypeId', 'documentName', 'userAnswers'];
+  const incomeKeys = Object.keys(payload);
+  const missingKeys = requiredKeys.filter((field) => !incomeKeys.includes(field));
+  if (missingKeys.length > 0) return new ClientError.BadRequestError(`Missing required data: ${missingKeys.join(', ')}`);
+
+  const { DocumentTypeId, documentName, userAnswers } = payload;
+
+  const docExist = await DocumentType.findById(DocumentTypeId);
+  if (!docExist) return new ClientError.BadRequestError('Not such doc type found');
   const draft = new UserDoc({
     DocType: docExist._id,
     UserId: id,
-    docName,
-    payload,
+    docName: documentName,
+    payload: { userAnswers },
     createdAt: Date.now(),
     editedAt: Date.now()
   });

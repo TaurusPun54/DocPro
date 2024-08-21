@@ -23,19 +23,20 @@ const checkAns = async (req) => {
   let errorArray = [];
 
   const { DocType, payload } = userdocData;
-  if (!DocType || !payload) return new ClientError.BadRequestError('This doc is not completed or valid');
+  if (!DocType || !payload) return new ClientError.BadRequestError('This doc is invalid');
   const { userAnswers } = payload;
   const docData = await DocumentType.findOne({ _id: DocType, active: true }).populate('questions');
   const questions = docData.questions;
-  // console.log(questions);
+  questions.sort((a, b) => a.order - b.order);
+  console.log(`There are total ${questions.length} questions`);
   questions.forEach((question, i) => {
     //console.log(question.shape);
     const schema = question.shape;
     const data = userAnswers[i];
-    const result = validator.answerValidator(schema, data);
-    errorArray.push(result);
+    const result = validator.answerValidator(schema, data, i);
+    // errorArray.push(result);
   });
-  return errorArray;
+  // return errorArray;
 };
 
 module.exports = {

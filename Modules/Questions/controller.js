@@ -18,19 +18,20 @@ const createNewQuestion = async (payload) => { //payload is object
   let newQuestion;
   if (expected && type === 'radio') {
     shape = {
-      type: "array",
-      minLength: 1,
-      maxLength: 1,
-      items: [{ type: "string", enum: [`${expected}`], nullable: false }],
+      type: "string",
+      enum: [`${expected}`],
+      // minLength: 1,
+      // maxLength: 1,
+      // items: [{ type: "string", enum: [`${expected}`], nullable: false }],
       nullable: false,
     };
   }else {
     if (type === 'text') {
       shape = {
-        type: "array",
+        type: "string",
         minLength: 1,
-        maxLength: 1,
-        items: [{ type: "string", maxLength: 1000, nullable: false }],
+        maxLength: 1000,
+        // items: [{ type: "string", maxLength: 1000, nullable: false }],
         nullable: false,
       };
     }
@@ -39,16 +40,17 @@ const createNewQuestion = async (payload) => { //payload is object
         type: "array",
         minLength: 1,
         maxLength: 10,
-        items: [{ type: "string", maxLength: 1000, nullable: false }],
+        items: [{ type: "string", maxLength: 100, nullable: false }],
         nullable: false,
       };
     }
     if (type === 'mc' || type === 'radio') {
       shape = {
-        type: "array",
-        minLength: 1,
-        maxLength: 1,
-        items: [{ type: "string", enum: options, nullable: false }],
+        type: "string",
+        enum: options,
+        // minLength: 1,
+        // maxLength: 1,
+        // items: [{ type: "string", enum: options, nullable: false }],
         nullable: false,
       };
     }
@@ -63,19 +65,19 @@ const createNewQuestion = async (payload) => { //payload is object
     }
     if (type === 'number') {
       shape = {
-        type: "array",
-        minLength: 1,
-        maxLength: 1,
-        items: [{ type: "string", maxLength: 10, nullable: false }],
+        type: "number",
+        // minLength: 1,
+        // maxLength: 1,
+        // items: [{ type: "string", maxLength: 10, nullable: false }],
         nullable: false,
       };
     }
     if (type === 'date') {
       shape = {
-        type: "array",
-        minLength: 1,
-        maxLength: 1,
-        items: [{ type: "string", format: 'date', nullable: false }],
+        type: "date",
+        // minLength: 1,
+        // maxLength: 1,
+        // items: [{ type: "string", format: 'date', nullable: false }],
         nullable: false,
       };
     }
