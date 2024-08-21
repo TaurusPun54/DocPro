@@ -12,7 +12,7 @@ const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors
 const createNewDoc = async (req) => {
   const { role } = req.user;
   if (role !== 'admin') return new ClientError.ForbiddenError('No access right');
-  const { type, price, currency } = req.body.documentType;
+  const { type, description, price, currency } = req.body.documentType;
   const questions = req.body.questions; //questions is array of object
   if (!type || !price || !currency) return new ClientError.BadRequestError('Missing required data, cannot create new Doc');
   const typeExist = await DocumentType.findOne({ type });
@@ -20,6 +20,7 @@ const createNewDoc = async (req) => {
   try {
     const docToCreate = new DocumentType({
       type,
+      description: description ?? '',
       price,
       currency
     });
