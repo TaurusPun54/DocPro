@@ -23,7 +23,7 @@ const createNewUserDoc = async (req) => {
   const draft = new UserDoc({
     DocType: docExist._id,
     UserId: id,
-    docName: documentName,
+    docName: documentName ?? '',
     payload: { userAnswers },
     createdAt: Date.now(),
     editedAt: Date.now()

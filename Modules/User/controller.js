@@ -75,15 +75,17 @@ const updateUserInfoByPatch = async (req) => {
   const keys = Object.keys(payload);
   const user = await User.findById(id);
   if (!user) return new ClientError.NotFoundError('User not found');
-  for (const prop of keys) {
-    const updateField = {};
-    updateField[`info.${prop}`] = payload[prop];
-
-    const update = await User.findByIdAndUpdate(id, { $set: updateField });
-
-    if (!update) {
-      throw new ServerError.InternalServerError('Update failed, please try again');
+  try {
+    for (const prop of keys) {
+      const updateField = {};
+      updateField[`info.${prop}`] = payload[prop];
+  
+      await User.findByIdAndUpdate(id, { $set: updateField });
     }
+    return { message: 'user info updated' };
+  // eslint-disable-next-line no-unused-vars
+  } catch (error) {
+    return new ServerError.InternalServerError('Update failed, please try again');
   }
 };
 

@@ -27,6 +27,7 @@ const createNewDoc = async (req) => {
     const newDoc = await docToCreate.save();
     questions.forEach(async (q, i) => { // q is object
       const payload = {...q, DocType: newDoc._id, order: i+1};
+      // console.log(payload);
       await questionController.createNewQuestion(payload);
     });
     return { message: 'Doc created' };

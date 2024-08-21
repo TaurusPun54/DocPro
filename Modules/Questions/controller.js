@@ -7,7 +7,7 @@ const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors
 const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
 
 const createNewQuestion = async (payload) => { //payload is object
-  const requiredKeys = ['type', 'question', 'options', 'DocType', 'order'];
+  const requiredKeys = ['type', 'question', 'DocType', 'order'];
 
   const incomeKeys = Object.keys(payload);
   const missingKeys = requiredKeys.filter((field) => !incomeKeys.includes(field));
@@ -29,8 +29,8 @@ const createNewQuestion = async (payload) => { //payload is object
     if (type === 'text' || type === 'textarea') {
       shape = {
         type: "string",
-        minLength: parseInt(min, 10),
-        maxLength: parseInt(max, 10),
+        minLength: parseInt(min, 10) || 1,
+        maxLength: parseInt(max, 10) || 1000,
         // items: [{ type: "string", maxLength: 1000, nullable: false }],
         nullable: false,
       };
@@ -86,10 +86,10 @@ const createNewQuestion = async (payload) => { //payload is object
     question,
     description: description ?? '',
     placeholder: placeholder ?? '',
-    options,
+    options: options ?? [''],
     expected: expected ?? '',
-    min,
-    max,
+    min: min ?? 'N/A',
+    max: max ?? 'N/A',
     shape,
     DocType,
     order
