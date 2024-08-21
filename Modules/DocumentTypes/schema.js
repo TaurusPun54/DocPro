@@ -19,7 +19,7 @@ docTypeSchema.virtual('questions', {
   ref: 'Question',
   localField: '_id',
   foreignField: 'DocType',
-  options: { select: '-_id -DocType type question answer shape order' }
+  options: { select: '-_id -DocType' }
 })
 
 module.exports = model('DocumentType', docTypeSchema);
