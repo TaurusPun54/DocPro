@@ -35,7 +35,8 @@ const createPaymentIntent = async (req) => {
   //   if (result) errorArray.push(result);
   // });
   // console.log(errorArray);
-  const errorArray = await Promise(validator.answerValidator(userdocData));
+  const errorArray = await validator.answerValidator(userdocData);
+  console.log(errorArray);
   if (errorArray.length === 0) return { message: 'All answer valid' };
   return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
 };
