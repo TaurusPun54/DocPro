@@ -57,7 +57,7 @@ const userSchema = new Schema({
   },
   stripeCustomerId: {
     type: String,
-    immutable: true,
+    default: '',
     select: false
   },
   // validate: {
