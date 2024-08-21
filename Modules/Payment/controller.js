@@ -28,15 +28,16 @@ const checkAns = async (req) => {
   const docData = await DocumentType.findOne({ _id: DocType, active: true }).populate('questions');
   const questions = docData.questions;
   questions.sort((a, b) => a.order - b.order);
-  console.log(`There are total ${questions.length} questions`);
+  // console.log(`There are total ${questions.length} questions`);
   questions.forEach((question, i) => {
     //console.log(question.shape);
     const schema = question.shape;
     const data = userAnswers[i];
     const result = validator.answerValidator(schema, data, i);
-    // errorArray.push(result);
+    if (result) errorArray.push(result);
   });
-  // return errorArray;
+  // console.log(errorArray);
+  return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
 };
 
 module.exports = {

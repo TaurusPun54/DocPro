@@ -5,6 +5,7 @@ const crypto = require('crypto');
 
 // database
 const User = require('./schema');
+const DocumentType = require('../DocumentTypes/schema');
 
 // error
 const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
@@ -33,13 +34,24 @@ const getUserData = async (req) => {
   const editable = [];
   const completed = [];
   const paid = [];
-  docs.forEach((doc) => {
-    if (doc.paidAt) return paid.push(doc);
-    if (doc.completedAt) return completed.push(doc);
-    return editable.push(doc);
+  const processDocument = async (doc) => {
+    const doctype = await DocumentType.findById(doc.DocType.toString());
+    const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
+    
+    if (doc.paidAt) return outputDoc;
+    if (doc.completedAt) return outputDoc;
+    
+    return outputDoc;
+  };
+  const processedDocs = await Promise.all(docs.map(processDocument));
+  processedDocs.forEach((outputDoc) => {
+    if (outputDoc.paidAt) paid.push(outputDoc);
+    else if (outputDoc.completedAt) completed.push(outputDoc);
+    else editable.push(outputDoc);
   });
+  // console.log(editable)
   const output = { ...data._doc };
-  output.userdocs = {
+  output.userDocs = {
     editable,
     completed,
     paid

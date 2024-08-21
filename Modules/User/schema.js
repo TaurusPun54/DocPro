@@ -80,7 +80,7 @@ userSchema.virtual('docs', {
   ref: 'UserDoc',
   localField: '_id',
   foreignField: 'UserId',
-  options: { select: '-DocType' }
+  //options: { select: '-DocType' }
 })
 
 userSchema.pre('save', function(next) {
