@@ -11,6 +11,6 @@ const paymentController = require('./controller');
 const warpper = require('../../lib/Wrapper/wrapper');
 
 // payment intent
-router.post('/:docId([0-9a-fA-F]{24})', Auth.AccAuth, warpper(paymentController.checkAns));
+router.post('/:docId([0-9a-fA-F]{24})', Auth.AccAuth, warpper(paymentController.createPaymentIntent));
 
 module.exports = router;
