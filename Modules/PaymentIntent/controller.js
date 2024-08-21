@@ -37,7 +37,8 @@ const createPaymentIntent = async (req) => {
     customer = await stripe.customers.create({
       email: email,
     });
-    const user = await User.findByIdAndUpdate(id, { StripeCustomerId: customer.id });
+    await User.updateOne({ _id: id }, { $set: { StripeCustomerId: customer.id } });
+    const user = User.findById(id);
     return user;
   }
   return { message: `user with customerId: ${StripeCustomerId} started a payment intent` };
