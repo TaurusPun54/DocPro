@@ -38,15 +38,13 @@ const getUserData = async (req) => {
   const processDocument = async (doc) => {
     const doctype = await DocumentType.findById(doc.DocType.toString());
     const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
-
-    if (doc.active === false) return;
     
     if (doc.paidAt) return outputDoc;
     if (doc.completedAt) return outputDoc;
     
     return outputDoc;
   };
-  const processedDocs = await Promise.all(docs.map(processDocument));
+  const processedDocs = await Promise.all(docs.filter((doc) => doc.active === true).map(processDocument));
   processedDocs.forEach((outputDoc) => {
     if (outputDoc.paidAt) paid.push(outputDoc);
     else if (outputDoc.completedAt) completed.push(outputDoc);
