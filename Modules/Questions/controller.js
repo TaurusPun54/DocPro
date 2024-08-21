@@ -13,7 +13,7 @@ const createNewQuestion = async (payload) => { //payload is object
   const missingKeys = requiredKeys.filter((field) => !incomeKeys.includes(field));
   if (missingKeys.length > 0) return new ClientError.BadRequestError(`Missing required data: ${missingKeys.join(', ')}`);
 
-  const { type, question, options, expected, DocType, order } = payload;
+  const { type, question, options, expected, DocType, order, min, max, description, placeholder } = payload;
   let shape;
   let newQuestion;
   if (expected && type === 'radio') {
@@ -26,11 +26,11 @@ const createNewQuestion = async (payload) => { //payload is object
       nullable: false,
     };
   }else {
-    if (type === 'text') {
+    if (type === 'text' || type === 'textarea') {
       shape = {
         type: "string",
-        minLength: 1,
-        maxLength: 1000,
+        minLength: parseInt(min, 10),
+        maxLength: parseInt(max, 10),
         // items: [{ type: "string", maxLength: 1000, nullable: false }],
         nullable: false,
       };
@@ -57,8 +57,8 @@ const createNewQuestion = async (payload) => { //payload is object
     if (type === 'checkbox') {
       shape = {
         type: "array",
-        minLength: 1,
-        maxLength: options.length,
+        minLength: parseInt(min, 10) || 1,
+        maxLength: parseInt(max, 10) || options.length,
         items: [{ type: "string", enum: options, nullable: false }],
         nullable: false,
       };
@@ -66,9 +66,8 @@ const createNewQuestion = async (payload) => { //payload is object
     if (type === 'number') {
       shape = {
         type: "number",
-        // minLength: 1,
-        // maxLength: 1,
-        // items: [{ type: "string", maxLength: 10, nullable: false }],
+        minimum: parseInt(min, 10) || 1,
+        maximum: parseInt(max, 10) || 999999999,
         nullable: false,
       };
     }
@@ -85,8 +84,12 @@ const createNewQuestion = async (payload) => { //payload is object
   newQuestion = new Question({
     type,
     question,
+    description: description ?? '',
+    placeholder: placeholder ?? '',
     options,
     expected: expected ?? '',
+    min,
+    max,
     shape,
     DocType,
     order
