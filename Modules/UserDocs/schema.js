@@ -9,7 +9,7 @@ const UserDocsSchema = Schema(
   {
     DocType: { type: ObjectId, ref: 'DocumentType', required: true, immutable: true },
     UserId: { type: ObjectId, ref: 'User', required: true, immutable: true },
-    docName: { type: String, required: true, default: 'Unnamed doc' },
+    docName: { type: String },
     payload: { type: Object, required: true },
     createdAt: { type: Date, get: (createdAt) => createdAt.toLocaleDateString("sp-MX"), immutable: true },
     editedAt: { type: Date, get: (editedAt) => editedAt.toLocaleDateString("sp-MX") },
