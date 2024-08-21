@@ -30,8 +30,8 @@ const getUserData = async (req) => {
   const { id } = req.user;
   if (!id) return new ClientError.UnauthorizedError('Unknown user');
   const data = await User.findById(id).populate('docs', '-payload -__v');
-  
   const docs = data.docs ?? [];
+  docs.filter((doc) => doc.active === true);
   const editable = [];
   const completed = [];
   const paid = [];
