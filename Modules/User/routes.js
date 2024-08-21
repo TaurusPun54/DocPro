@@ -34,8 +34,8 @@ router.put('/', Auth.AccAuth, warpper(userController.updateUserInfo));
 // update user by patch
 router.patch('/', Auth.AccAuth, warpper(userController.updateUserInfoByPatch));
 
-// edit password
-router.patch('/editpassword', Auth.AccAuth, warpper(userController.changePassword));
+// forget and edit password
+router.post('/forgetPassword', Auth.AccAuth, warpper(userController.changePassword));
 
 // delete user
 router.delete('/', Auth.AccAuth, warpper(userController.deleteUser));

@@ -29,7 +29,8 @@ const checkEmailAvailable = async (req) => {
 const getUserData = async (req) => {
   const { id } = req.user;
   if (!id) return new ClientError.UnauthorizedError('Unknown user');
-  const data = await User.findById(id).populate('docs', '-payload -active -__v');
+  const data = await User.findById(id).populate('docs', '-payload -__v');
+  
   const docs = data.docs ?? [];
   const editable = [];
   const completed = [];
@@ -92,14 +93,17 @@ const updateUserInfoByPatch = async (req) => {
 const changePassword = async (req) => {
   const { id } = req.user;
   const { payload } = req.body;
-  if (!id || !payload) return new ClientError.BadRequestError('Cannot change password');
+  if (!id || !payload) return new ClientError.BadRequestError('cannot change password');
 
   const { currentPassword, newPassword } = payload;
   if (!currentPassword || !newPassword) return new ClientError.BadRequestError('Password required');
 
   const user = await User.findById(id, { active: true }).select('password');
   const passwordMatch = await bcrypt.compare(currentPassword, user.password);
-  if (!passwordMatch) return new ClientError.UnauthorizedError('Password not match');
+  if (!passwordMatch) return new ClientError.UnauthorizedError('current Password not match');
+
+  const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
+  if (!passwordRegex.test(newPassword)) return new ClientError.BadRequestError('New password not valid');
 
   const newpassword = await bcrypt.hash(newPassword, 10);
   const changePasswordSuccess = await User.findByIdAndUpdate(id, { $set: { password: newpassword } });
