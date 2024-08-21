@@ -31,13 +31,15 @@ const getUserData = async (req) => {
   if (!id) return new ClientError.UnauthorizedError('Unknown user');
   const data = await User.findById(id).populate('docs', '-payload -__v');
   const docs = data.docs ?? [];
-  docs.filter((doc) => doc.active === true);
+  // docs.filter((doc) => doc.active === true);
   const editable = [];
   const completed = [];
   const paid = [];
   const processDocument = async (doc) => {
     const doctype = await DocumentType.findById(doc.DocType.toString());
     const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
+
+    if (doc.active === false) return;
     
     if (doc.paidAt) return outputDoc;
     if (doc.completedAt) return outputDoc;
