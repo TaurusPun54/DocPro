@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 const { Schema, model } = require('mongoose');
-const validator = require('../../lib/Validator/validator');
+// const validator = require('../../lib/Validator/validator');
 
 // eslint-disable-next-line no-unused-vars
 const ClientErrors = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
@@ -52,19 +52,20 @@ const userSchema = new Schema({
     type: String,
     default: 'user',
     enum: ['user', 'admin'],
+    required: true,
     immutable: true
   },
   stripeCustomerId: {
     type: String,
-    default: '',
-    validate: {
-      validator: function(id) {
-        if (id !== '') return validator.isValidStripeCustomerId(id);
-      },
-      message: 'Invalid Stripe Customer ID or changes are not allowed.'
-    },
+    immutable: true,
     select: false
   },
+  // validate: {
+  //   validator: function(id) {
+  //     if (id !== '') return validator.isValidStripeCustomerId(id);
+  //   },
+  //   message: 'Invalid Stripe Customer ID or changes are not allowed.'
+  // },
   refreshToken: {
     type: String,
     default: '',
@@ -83,18 +84,21 @@ userSchema.virtual('docs', {
   //options: { select: '-DocType' }
 })
 
-userSchema.pre('save', function(next) {
-  if (this.isNew) {
-    this.stripeCustomerId = '';
-  }
-  next();
-});
+// userSchema.pre('save', function(next) {
+//   if (this.isNew) {
+//     this.stripeCustomerId = '';
+//   }
+//   else if (this.stripeCustomerId !== '') {
+//     return next(new ClientErrors.ForbiddenError('Cannot update stripeCustomerId.'));
+//   }
+//   next();
+// });
 
-userSchema.post('validate', function(doc) {
-  if (doc.isModified('stripeCustomerId')) {
-    doc.stripeCustomerId = this._original.stripeCustomerId;
-  }
-});
+// userSchema.post('validate', function(doc) {
+//   if (doc.isModified('stripeCustomerId')) {
+//     doc.stripeCustomerId = this._original.stripeCustomerId;
+//   }
+// });
 
 userSchema.methods.updateInfo = async function(newInfo) {
     Object.keys(newInfo).forEach((key) => {
