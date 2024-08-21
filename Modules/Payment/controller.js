@@ -37,6 +37,7 @@ const checkAns = async (req) => {
     if (result) errorArray.push(result);
   });
   // console.log(errorArray);
+  if (errorArray.length === 0) return { message: 'All answer valid' };
   return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
 };
 
