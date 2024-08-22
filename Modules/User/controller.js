@@ -55,11 +55,12 @@ const getUserData = async (req) => {
   //   else if (outputDoc.completedAt && outputDoc.completedAt !== '') completed.push(outputDoc);
   //   else editable.push(outputDoc);
   // })
-  console.log(filteredDocs);
+  // console.log(filteredDocs);
   const processedDocs = await Promise.all(filteredDocs.map(async (doc) => {
-    const doctype = await DocumentType.findById(doc.DocType.toString());
-    // console.log(doctype);
+    const doctype = await DocumentType.findById(doc.DocType);
+    console.log(doctype);
     const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
+    console.log(outputDoc);
     
     // if (doc.paidAt !== '') return outputDoc;
     // if (doc.completedAt !== '') return outputDoc;
