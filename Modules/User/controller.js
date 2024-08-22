@@ -60,7 +60,7 @@ const getUserData = async (req) => {
         return null; // Return null for documents that don't meet the condition
     })
   );
-  console.log(filteredAndSearchedDocs);
+  //console.log(filteredAndSearchedDocs);
   const filteredDocs = (filteredAndSearchedDocs.filter(doc => doc !== null));
   console.log(filteredDocs)
   // filteredDocs.foreach(async (doc) => {
@@ -75,7 +75,7 @@ const getUserData = async (req) => {
     //console.log(doc.DocType);
     const doctype = await DocumentType.findById(doc.DocType);
     //console.log(doctype);
-    const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
+    const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
     //console.log(outputDoc);
     
     // if (doc.paidAt !== '') return outputDoc;
@@ -83,6 +83,7 @@ const getUserData = async (req) => {
     
     return outputDoc;
   }));
+  console.log(processedDocs)
   // console.log(processedDocs);
   processedDocs.forEach((outputDoc) => {
     if (outputDoc.paidAt && outputDoc.paidAt !== '') paid.push(outputDoc);
