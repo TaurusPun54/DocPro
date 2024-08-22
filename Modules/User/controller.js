@@ -47,7 +47,20 @@ const getUserData = async (req) => {
     
     return outputDoc;
   };
-  const filteredDocs = await Promise.all(docs.filter(async (doc) => doc.active === true && await DocumentType.findById(doc.DocType)));
+  const filteredAndSearchedDocs = await Promise.all(
+    docs.map(async (doc) => {
+        if (doc.active) {
+            // Perform database search for each doc
+            const doctype = await DocumentType.findById(doc.DocType);
+            // Check additional conditions in the database search result
+            if (doctype) {
+                return doc; // Return the document if the condition is met
+            }
+        }
+        return null; // Return null for documents that don't meet the condition
+    })
+  );
+  const filteredDocs = (filteredAndSearchedDocs.filter(doc => doc !== null));
   // filteredDocs.foreach(async (doc) => {
   //   const doctype = await DocumentType.findById(doc.DocType.toString());
   //   const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
@@ -66,7 +79,7 @@ const getUserData = async (req) => {
     // if (doc.paidAt !== '') return outputDoc;
     // if (doc.completedAt !== '') return outputDoc;
     
-    if (outputDoc) return outputDoc;
+    return outputDoc;
   }));
   // console.log(processedDocs);
   processedDocs.forEach((outputDoc) => {

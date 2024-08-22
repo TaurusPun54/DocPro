@@ -61,6 +61,7 @@ const userSchema = new Schema({
     select: false,
     validate: {
       validator: function (value) {
+        if (this.isNew) return true;
         if (this.stripeCustomerId === '' && validator.isValidStripeCustomerId(value)) return true;
         return false;
       },
