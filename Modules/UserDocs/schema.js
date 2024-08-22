@@ -29,24 +29,9 @@ const UserDocsSchema = Schema(
     payload: { type: Object, required: true },
     createdAt: { type: Date, immutable: true },
     editedAt: { type: Date },
-    completedAt: { type: Date, default: '', validate: { validator: function(value) {
-      return validateDateUpdate(this.completedAt, value)
-      // if (this.isNew) return true;
-      // if (this.completedAt === null) return true;
-      // return false;
-    }, message: 'completedAt should not be updated after set' } },
-    paidAt: { type: Date, default: '', validate: { validator: function(value) {
-      return validateDateUpdate(this.paidAt, value)
-      // if (this.isNew) return true;
-      // if (this.paidAt === null) return true;
-      // return false;
-    }, message: 'paidAtAt should not be updated after set' } },
-    deletedAt: { type: Date, default: '', validate: { validator: function(value) {
-      return validateDateUpdate(this.deletedAt, value)
-      // if (this.isNew) return true;
-      // if (this.deletedAt === null) return true;
-      // return false;
-    }, message: 'deletedAt should not be updated after set' } },
+    completedAt: { type: Date, default: '' },
+    paidAt: { type: Date, default: '' },
+    deletedAt: { type: Date, default: '' },
     active: { type: Boolean, default: true }
   },
 );
