@@ -48,7 +48,15 @@ const getUserData = async (req) => {
     return outputDoc;
   };
   const filteredDocs = docs.filter((doc) => doc.active === true);
-  const processedDocs = await filteredDocs.map(async (doc) => {
+  // filteredDocs.foreach(async (doc) => {
+  //   const doctype = await DocumentType.findById(doc.DocType.toString());
+  //   const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
+  //   if (outputDoc.paidAt && outputDoc.paidAt !== '') paid.push(outputDoc);
+  //   else if (outputDoc.completedAt && outputDoc.completedAt !== '') completed.push(outputDoc);
+  //   else editable.push(outputDoc);
+  // })
+  console.log(filteredDocs);
+  const processedDocs = await Promise.all(filteredDocs.map(async (doc) => {
     const doctype = await DocumentType.findById(doc.DocType.toString());
     // console.log(doctype);
     const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
@@ -57,8 +65,8 @@ const getUserData = async (req) => {
     // if (doc.completedAt !== '') return outputDoc;
     
     return outputDoc;
-  });
-  console.log(processedDocs);
+  }));
+  // console.log(processedDocs);
   processedDocs.forEach((outputDoc) => {
     if (outputDoc.paidAt && outputDoc.paidAt !== '') paid.push(outputDoc);
     else if (outputDoc.completedAt && outputDoc.completedAt !== '') completed.push(outputDoc);
