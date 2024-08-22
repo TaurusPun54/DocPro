@@ -37,16 +37,15 @@ const getUserData = async (req) => {
   const editable = [];
   const completed = [];
   const paid = [];
-  // eslint-disable-next-line no-unused-vars
-  const processDocument = async (doc) => {
-    const doctype = await DocumentType.findById(doc.DocType.toString());
-    const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
+  // const processDocument = async (doc) => {
+  //   const doctype = await DocumentType.findById(doc.DocType.toString());
+  //   const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
     
-    if (doc.paidAt) return outputDoc;
-    if (doc.completedAt) return outputDoc;
+  //   if (doc.paidAt) return outputDoc;
+  //   if (doc.completedAt) return outputDoc;
     
-    return outputDoc;
-  };
+  //   return outputDoc;
+  // };
   const filteredAndSearchedDocs = await Promise.all(
     docs.map(async (doc) => {
         if (doc.active === true) {
@@ -62,7 +61,7 @@ const getUserData = async (req) => {
   );
   //console.log(filteredAndSearchedDocs);
   const filteredDocs = (filteredAndSearchedDocs.filter(doc => doc !== null));
-  console.log(filteredDocs)
+  // console.log(filteredDocs)
   // filteredDocs.foreach(async (doc) => {
   //   const doctype = await DocumentType.findById(doc.DocType.toString());
   //   const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
@@ -83,8 +82,6 @@ const getUserData = async (req) => {
     
     return outputDoc;
   }));
-  console.log(processedDocs)
-  // console.log(processedDocs);
   processedDocs.forEach((outputDoc) => {
     if (outputDoc.paidAt && outputDoc.paidAt !== '') paid.push(outputDoc);
     else if (outputDoc.completedAt && outputDoc.completedAt !== '') completed.push(outputDoc);

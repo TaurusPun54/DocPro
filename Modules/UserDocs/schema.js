@@ -47,7 +47,7 @@ UserDocsSchema.virtual('questions', {
   localField: 'DocType',
   foreignField: 'DocType',
   justOne: false,
-  options: { select: '-_id -DocType type question options expected shape order' },
+  options: { select: '-_id -DocType' },
   // match: { active: true }
 })
 
