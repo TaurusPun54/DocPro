@@ -8,10 +8,10 @@ const {
 // const { validate } = require('../DocumentTypes/schema');
 
 function validateDateUpdate (field, value) {
-  // const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{2}:\d{2}$/;
-  // const isValidDateFormat = dateFormatRegex.test(value);
+  //const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{2}:\d{2}$/;
+  //const isValidDateFormat = dateFormatRegex.test(value);
   if (this.isNew) return true;
-  if (field === '') return true;
+  if ((field === null || field === '')) return true;
   return false;
 }
 
@@ -25,19 +25,22 @@ const UserDocsSchema = Schema(
     createdAt: { type: Date, immutable: true },
     editedAt: { type: Date },
     completedAt: { type: Date, default: '', validate: { validator: function(value) {
-      if (this.isNew) return true;
-      if (this.completedAt === '') return true;
-      return false;
+      return validateDateUpdate(this.completedAt, value)
+      // if (this.isNew) return true;
+      // if (this.completedAt === null) return true;
+      // return false;
     }, message: 'completedAt should not be updated after set' } },
     paidAt: { type: Date, default: '', validate: { validator: function(value) {
-      if (this.isNew) return true;
-      if (this.paidAt === '') return true;
-      return false;
+      return validateDateUpdate(this.paidAt, value)
+      // if (this.isNew) return true;
+      // if (this.paidAt === null) return true;
+      // return false;
     }, message: 'paidAtAt should not be updated after set' } },
     deletedAt: { type: Date, default: '', validate: { validator: function(value) {
-      if (this.isNew) return true;
-      if (this.deletedAt === '') return true;
-      return false;
+      return validateDateUpdate(this.deletedAt, value)
+      // if (this.isNew) return true;
+      // if (this.deletedAt === null) return true;
+      // return false;
     }, message: 'deletedAt should not be updated after set' } },
     active: { type: Boolean, default: true }
   },
