@@ -13,6 +13,8 @@ const UserDoc = require('../UserDocs/schema');
 const DocumentType = require('../DocumentTypes/schema');
 const PaymentIntent = require('../PaymentIntent/schema');
 
+const httpStatusCodes = require('../../lib/Error/HttpErrors/httpstatuscodes');
+
 // error
 const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
 const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
@@ -34,6 +36,8 @@ const createPaymentIntent = async (req) => {
   // console.log(documentType)
   if (!documentType) return new ClientError.BadRequestError('This document are not valid');
 
+  await UserDoc.findByIdAndUpdate(docId, { $set: { completedAt: Date.now() } })
+
   let customer = {};
   if (stripeCustomerId === '' || !stripeCustomerId) {
     customer = await stripe.customers.create({
@@ -41,8 +45,8 @@ const createPaymentIntent = async (req) => {
     });
     // console.log(customer.id);
     await User.findByIdAndUpdate(id, { stripeCustomerId: customer.id });
-    const user = User.findById(id).select('+stripeCustomerId');
-    return user;
+    // const user = User.findById(id).select('+stripeCustomerId');
+    // return user;
   }
   // return { message: `user with customerId: ${stripeCustomerId} started a payment intent` };
   const customerId = customer.id ?? stripeCustomerId;
@@ -51,9 +55,15 @@ const createPaymentIntent = async (req) => {
     {apiVersion: '2024-06-20'}
   );
   const paymentIntent = await stripe.paymentIntents.create({
+    // payment_method_types: ['card', 'apple_pay'],
     amount: parseInt(documentType.price.toString(), 10) * 100,
     currency: documentType.currency,
     customer: customerId,
+    // eslint-disable-next-line camelcase
+    automatic_payment_methods: {
+      enabled: true,
+    },
+    description: `Purchase product: ${userdocData.docName}`,
     metadata: {
       userDocId: docId
     },
@@ -83,6 +93,20 @@ const createPaymentIntent = async (req) => {
   }
 };
 
+const getPaymentIntent = async (req) => {
+  const { id, stripeCustomerId } = req.user;
+  const { paymentIntentId } = req.query;
+  const regex = /^pi_[\w\d]{24}$/;
+  if (!paymentIntentId || !regex.test(paymentIntentId)) return new ClientError.BadRequestError('Not a valid payment intent id');
+  const record = await PaymentIntent.findOne({ stripePaymentIntentId: paymentIntentId });
+  if (!record) return new ClientError.NotFoundError('No such payment intent record');
+  if (record.stripeCustomerId !== stripeCustomerId) return new ClientError.ForbiddenError('No access right');
+  // if (record.status === 'requires_payment_method') return { message: 'Order still processing' }; statusCode: httpStatusCodes.Accepted,
+  // if (record.status === 'succeeded') return {  }
+  return { data: record };
+}
+
 module.exports = {
   createPaymentIntent,
+  getPaymentIntent
 };

@@ -9,7 +9,7 @@ const {
 function validateDateUpdate (field, value) {
   const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{2}:\d{2}$/;
   const isValidDateFormat = dateFormatRegex.test(value);
-  if (field === '' && isValidDateFormat(value)) return true;
+  if ((!field && isValidDateFormat(value)) || (field === '' && isValidDateFormat(value))) return true;
   return false;
 }
 
@@ -23,13 +23,13 @@ const UserDocsSchema = Schema(
     editedAt: { type: Date, get: (editedAt) => editedAt.toLocaleDateString("sp-MX") },
     completedAt: { type: Date, get: (completedAt) => completedAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
       return validateDateUpdate(this.completedAt, value);
-    }, message: 'completedAt should not be updated after set' } },
+    }, message: 'completedAt should not be updated after set' }, default: '' },
     paidAt: { type: Date, get: (paidAt) => paidAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
       return validateDateUpdate(this.completedAt, value);
-    }, message: 'paidAtAt should not be updated after set' } },
+    }, message: 'paidAtAt should not be updated after set' }, default: '' },
     deletedAt: { type: Date, get: (deletedAt) => deletedAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
       return validateDateUpdate(this.completedAt, value);
-    }, message: 'deletedAt should not be updated after set' } },
+    }, message: 'deletedAt should not be updated after set' }, default: '' },
     active: { type: Boolean, default: true }
   },
 );
