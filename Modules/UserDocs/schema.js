@@ -16,7 +16,7 @@ function validateDateUpdate (field, value) {
   const dateTimeString = new Date(value).toISOString();
   const isValidDateFormat = dateFormatRegex.test(dateTimeString);
   if (this.isNew) return true;
-  if ((field === null || field === '') && isValidDateFormat) return true;
+  if ((field === null || field === '')) return true;
   return false;
 }
 
