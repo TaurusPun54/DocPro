@@ -47,7 +47,10 @@ const getUserData = async (req) => {
     
     return outputDoc;
   };
-  const filteredDocs = docs.filter((doc) => doc.active === true);
+  const filteredDocs = await Promise.all(docs.filter(async (doc) => {
+    const doctype = await DocumentType.findById(doc.DocType);
+    if (doctype && doc.active === true) return doc;
+  }));
   // filteredDocs.foreach(async (doc) => {
   //   const doctype = await DocumentType.findById(doc.DocType.toString());
   //   const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
@@ -167,8 +170,24 @@ const register = async (req) => {
     info: info ?? {},
     role: 'user'
   })
-  await newUser.save();
-  return { message: 'sign up success' };
+  const user = await newUser.save();
+  const randomString = crypto.randomBytes(64).toString('hex');
+
+  const authPayload = {
+    id: user._id,
+    randomString
+  }
+  const acctoken = jwt.signacc(authPayload);
+  const reftoken = jwt.signref(authPayload);
+  const data = {
+    id: user._id,
+    customerId: user.stripeCustomerId ?? '',
+    email: user.email,
+    info: user.info,
+    accessToken: acctoken,
+    refreshToken: reftoken
+  }
+  return { message: 'sign up success', data };
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -182,7 +201,7 @@ const login = async (req, res) => {
 
   const { email, password } = req.body;
   if (!emailRegex.test(email)) return new ClientError.UnauthorizedError('login fail, email or password not valid');
-  const userExist = await User.findOne({ email, active: true }).select('_id email password StripeCustomerId refreshtoken info');
+  const userExist = await User.findOne({ email, active: true }).select('_id email password stripeCustomerId refreshtoken info');
   if (!userExist) return new ClientError.UnauthorizedError('login fail, email or password not valid');
   const passwordMatch = await bcrypt.compare(password, userExist.password);
   if (!passwordMatch) return new ClientError.UnauthorizedError('login fail, email or password not valid');
@@ -194,13 +213,12 @@ const login = async (req, res) => {
     randomString
   }
   const acctoken = jwt.signacc(authPayload);
-  // console.log(acctoken);
   const reftoken = jwt.signref(authPayload);
   const loginSuccess = await User.findByIdAndUpdate(userExist._id, { refreshToken: reftoken });
   if (loginSuccess) {
     const data = {
       id: userExist._id,
-      customerId: userExist.StripeCustomerId ?? '',
+      customerId: userExist.stripeCustomerId ?? '',
       email: userExist.email,
       info: userExist.info,
       accessToken: acctoken,

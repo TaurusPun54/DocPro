@@ -29,7 +29,7 @@ const createNewUserDoc = async (req) => {
     editedAt: Date.now()
   });
   const saved = await draft.save();
-  if (saved) return { message: 'New draft created' };
+  if (saved) return { data: saved };
 };
 
 const editUserDoc = async (req) => {
