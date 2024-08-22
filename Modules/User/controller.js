@@ -49,7 +49,7 @@ const getUserData = async (req) => {
   };
   const filteredAndSearchedDocs = await Promise.all(
     docs.map(async (doc) => {
-        if (doc.active) {
+        if (doc.active === true) {
             // Perform database search for each doc
             const doctype = await DocumentType.findById(doc.DocType);
             // Check additional conditions in the database search result
@@ -60,7 +60,9 @@ const getUserData = async (req) => {
         return null; // Return null for documents that don't meet the condition
     })
   );
+  console.log(filteredAndSearchedDocs);
   const filteredDocs = (filteredAndSearchedDocs.filter(doc => doc !== null));
+  console.log(filteredDocs)
   // filteredDocs.foreach(async (doc) => {
   //   const doctype = await DocumentType.findById(doc.DocType.toString());
   //   const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
