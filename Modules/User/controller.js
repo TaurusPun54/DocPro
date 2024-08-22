@@ -139,7 +139,7 @@ const changePassword = async (req) => {
 
   const user = await User.findById(id, { active: true }).select('password');
   const passwordMatch = await bcrypt.compare(currentPassword, user.password);
-  if (!passwordMatch) return new ClientError.UnauthorizedError('current Password not match');
+  if (!passwordMatch) return new ClientError.BadRequestError('current Password not match');
 
   const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
   if (!passwordRegex.test(newPassword)) return new ClientError.BadRequestError('New password not valid');

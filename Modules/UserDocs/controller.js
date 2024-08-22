@@ -39,7 +39,7 @@ const editUserDoc = async (req) => {
   if (!docId || !payload || !docName) return new ClientError.BadRequestError('Cannot edit draft');
   const docExist = await UserDoc.findOne({ _id: docId, active: true });
   if (!docExist) return new ClientError.NotFoundError('Draft not found');
-  if (docExist.completedAt || docExist.paidAt) return new ClientError.ForbiddenError('This doc already completed')
+  if (docExist.completedAt !== null || docExist.paidAt !== null) return new ClientError.ForbiddenError('Cannot update a completed or paid doc');
     docExist.docName = docName;
     docExist.payload = payload;
     docExist.editedAt = Date.now();
