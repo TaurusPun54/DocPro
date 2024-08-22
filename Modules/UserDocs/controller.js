@@ -6,6 +6,8 @@ const PDFDocument = require('pdfkit');
 const UserDoc = require('./schema');
 const DocumentType = require('../DocumentTypes/schema');
 
+const validator = require('../../lib/Validator/validator');
+
 // error
 const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
 const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
@@ -38,16 +40,29 @@ const createNewUserDoc = async (req) => {
 const editUserDoc = async (req) => {
   // const { id } = req.user;
   const { docId } = req.params;
-  const { docName, payload } = req.body;
-  if (!docId || !payload || !docName) return new ClientError.BadRequestError('Cannot edit draft');
+  const { docName, payload, finished } = req.body;
+  // const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+  if (!docId || !payload) return new ClientError.BadRequestError('Cannot save draft');
   const docExist = await UserDoc.findOne({ _id: docId, active: true });
   if (!docExist) return new ClientError.NotFoundError('Draft not found');
   if (docExist.completedAt !== null || docExist.paidAt !== null) return new ClientError.ForbiddenError('Cannot update a completed or paid doc');
-    docExist.docName = docName;
+  if (finished === false || !finished) {
+    docExist.docName = docName ?? '';
     docExist.payload = payload;
     docExist.editedAt = Date.now();
-  const edit = await docExist.save();
-  if (edit) return { message: 'Draft saved' };
+    const edit = await docExist.save();
+    if (edit) return { message: 'Draft saved' };
+  }
+  if (finished === true) {
+    const errorArray = await validator.answerValidator(docExist);
+    if (errorArray.length !== 0) return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
+    docExist.docName = docName ?? '';
+    docExist.payload = payload;
+    docExist.editedAt = Date.now();
+    docExist.completedAt = Date.now();
+    const edit = await docExist.save();
+    if (edit) return { message: 'This completed draft is saved and locked' };
+  }
 };
 
 const getUserDoc = async (req) => {

@@ -43,4 +43,7 @@ router.delete('/', Auth.AccAuth, warpper(userController.deleteUser));
 // refresh token rotation
 router.get('/refreshTokenRotation', warpper(RefreshRotation));
 
+// change email
+router.patch('/updateEmail', Auth.AccAuth, warpper(userController.changeEmail));
+
 module.exports = router;

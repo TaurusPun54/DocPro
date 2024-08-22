@@ -29,14 +29,16 @@ const createPaymentIntent = async (req) => {
   if (userdocData.paidAt !== '' && userdocData.paidAt !== null) return new ClientError.ForbiddenError('Cannot purchase a paid doc');
   if (userdocData.UserId.toString() !== id) return new ClientError.ForbiddenError('no access right');
 
-  const errorArray = await validator.answerValidator(userdocData);
-  if (errorArray.length !== 0) return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
+  // const errorArray = await validator.answerValidator(userdocData);
+  // if (errorArray.length !== 0) return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
 
   const documentType = await DocumentType.findOne({ _id: userdocData.DocType.toString(), active: true });
   // console.log(documentType)
   if (!documentType) return new ClientError.BadRequestError('This document are not valid');
 
-  if (userdocData.completedAt === null || userdocData.completedAt === '') await UserDoc.findByIdAndUpdate(docId, { $set: { completedAt: Date.now() } })
+  // if (userdocData.completedAt === null || userdocData.completedAt === '') {
+  //   await UserDoc.findByIdAndUpdate(docId, { $set: { completedAt: Date.now() } })
+  // }
 
   let customer = {};
   if (stripeCustomerId === '' || !stripeCustomerId) {

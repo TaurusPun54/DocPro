@@ -250,6 +250,17 @@ const logout = async (req) => {
   return new ServerError.InternalServerError('logout fail, try again');
 }
 
+const changeEmail = async (req) => {
+  const { id } = req.user;
+  const { newEmail } = req.body;
+  const emailInUsed = await User.findOne({ email: newEmail, active: true });
+  if (emailInUsed) return new ClientError.ConflictError('This email already registered');
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  if (!emailRegex.test(newEmail)) return new ClientError.BadRequestError('This email not valid');
+  const updated = await User.findByIdAndUpdate(id, { $set: { email: newEmail } });
+  if (updated) return { message: 'email updated' };
+}
+
 
 module.exports = {
   register,
@@ -260,5 +271,6 @@ module.exports = {
   changePassword,
   deleteUser,
   checkEmailAvailable,
-  getUserData
+  getUserData,
+  changeEmail
 };
