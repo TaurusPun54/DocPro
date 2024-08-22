@@ -1,5 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
+
 const UserDoc = require('./schema');
 const DocumentType = require('../DocumentTypes/schema');
 
@@ -73,9 +76,69 @@ const deleteUserDoc = async (req) => {
   if (toDelete) return { message: 'User doc deleted' };
 }
 
+const getUserDocPDFBuffer = async (req) => {
+  const { id } = req.user;
+  const { docId } = req.query;
+
+  const docRegex = /^([0-9a-fA-F]{24})$/;
+  const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+
+  if (!docId || !docRegex.test(docId)) return new ClientError.BadRequestError('Please provide a valid doc id');
+
+  const userDocData = await UserDoc.findOne({ _id: docId, active: true }).populate('DocTypeName questions');
+  if (!userDocData) return new ClientError.NotFoundError('No such user doc');
+  if (userDocData.UserId.toString() !== id) return new ClientError.ForbiddenError('No access right');
+  // if (userDocData.paidAt === null || !dateFormatRegex.test(userDocData.paidAt)) return new ClientError.ForbiddenError('This doc is not paid'); 
+  //if (userDocData.paidAt === null)
+  console.log(userDocData.createdAt);
+  console.log(userDocData.DocTypeName.type);
+  console.log(userDocData.questions.map((doc) => {
+    const output = { type: doc.type, question: doc.question, options: doc.options, order: doc.order };
+    return output;
+  }).sort((a, b) => a.order - b.order));
+  const pdfbuffer = await new Promise((resolve) => {
+    const pdf = new PDFDocument();
+    const buffer = [];
+    pdf.on('data', buffer.push.bind(buffer));
+    pdf.on('end', () => {
+      // eslint-disable-next-line no-undef
+      const pdfData = Buffer.concat(buffer);
+      resolve(pdfData);
+    });
+    pdf.pipe(fs.createWriteStream(`${userDocData.docName}.pdf`));
+  })
+  return { message: 'get success' };
+}
+
+const generatePDF = async (req, res) => {
+  const pdfbuffer = await new Promise((resolve, reject) => {
+    const doc = new PDFDocument();
+    const buffers = [];
+
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {
+      const pdfData = Buffer.concat(buffers);
+      resolve(pdfData);
+    });
+
+    doc.pipe(fs.createWriteStream('output.pdf'));
+    doc
+      .fontSize(25)
+      .text('Some text with an embedded font!', 100, 100);
+    doc.text('sajfshfjshfsjfdsjfdhsjf');
+    doc.end();
+  });
+  // console.log(pdfdata);
+  return { pdfbuffer };
+  // res.setHeader('Content-Type', 'application/pdf');
+  // res.setHeader('Content-Disposition', 'attachment; filename="output.pdf"');
+  // res.send(pdfdata);
+};
+
 module.exports = {
   createNewUserDoc,
   editUserDoc,
   getUserDoc,
-  deleteUserDoc
+  deleteUserDoc,
+  getUserDocPDFBuffer
 };

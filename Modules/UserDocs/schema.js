@@ -7,11 +7,16 @@ const {
 } = require('mongoose');
 // const { validate } = require('../DocumentTypes/schema');
 
+// error
+const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
+const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
+
 function validateDateUpdate (field, value) {
-  //const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{2}:\d{2}$/;
-  //const isValidDateFormat = dateFormatRegex.test(value);
+  const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+  const dateTimeString = new Date(value).toISOString();
+  const isValidDateFormat = dateFormatRegex.test(dateTimeString);
   if (this.isNew) return true;
-  if ((field === null || field === '')) return true;
+  if ((field === null || field === '') && isValidDateFormat) return true;
   return false;
 }
 
