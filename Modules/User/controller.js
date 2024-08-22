@@ -57,6 +57,7 @@ const getUserData = async (req) => {
   // })
   // console.log(filteredDocs);
   const processedDocs = await Promise.all(filteredDocs.map(async (doc) => {
+    console.log(doc.DocType);
     const doctype = await DocumentType.findById(doc.DocType);
     console.log(doctype);
     const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
