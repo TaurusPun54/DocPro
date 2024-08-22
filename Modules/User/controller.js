@@ -48,16 +48,16 @@ const getUserData = async (req) => {
     return outputDoc;
   };
   const filteredDocs = docs.filter((doc) => doc.active === true);
-  const processedDocs = await Promise.all(filteredDocs.map(async (doc) => {
+  const processedDocs = await filteredDocs.map(async (doc) => {
     const doctype = await DocumentType.findById(doc.DocType.toString());
-    console.log(doctype);
+    // console.log(doctype);
     const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
     
     // if (doc.paidAt !== '') return outputDoc;
     // if (doc.completedAt !== '') return outputDoc;
     
     return outputDoc;
-  }));
+  });
   console.log(processedDocs);
   processedDocs.forEach((outputDoc) => {
     if (outputDoc.paidAt && outputDoc.paidAt !== '') paid.push(outputDoc);
