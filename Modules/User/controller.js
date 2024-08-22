@@ -30,7 +30,9 @@ const getUserData = async (req) => {
   const { id } = req.user;
   if (!id) return new ClientError.UnauthorizedError('Unknown user');
   const data = await User.findById(id).populate('docs', '-payload -__v');
+  console.log(data);
   const docs = data.docs ?? [];
+  console.log(docs);
   // docs.filter((doc) => doc.active === true);
   const editable = [];
   const completed = [];
@@ -57,8 +59,8 @@ const getUserData = async (req) => {
     return outputDoc;
   }));
   processedDocs.forEach((outputDoc) => {
-    if (outputDoc.paidAt !== '') paid.push(outputDoc);
-    else if (outputDoc.completedAt !== '') completed.push(outputDoc);
+    if (outputDoc.paidAt && outputDoc.paidAt !== '') paid.push(outputDoc);
+    else if (outputDoc.completedAt && outputDoc.completedAt !== '') completed.push(outputDoc);
     else editable.push(outputDoc);
   });
   // console.log(editable)
