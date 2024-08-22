@@ -47,10 +47,7 @@ const getUserData = async (req) => {
     
     return outputDoc;
   };
-  const filteredDocs = await Promise.all(docs.filter(async (doc) => {
-    const doctype = await DocumentType.findById(doc.DocType);
-    if (doctype && doc.active === true) return doc;
-  }));
+  const filteredDocs = docs.filter((doc) => doc.active === true);
   // filteredDocs.foreach(async (doc) => {
   //   const doctype = await DocumentType.findById(doc.DocType.toString());
   //   const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
@@ -63,13 +60,13 @@ const getUserData = async (req) => {
     //console.log(doc.DocType);
     const doctype = await DocumentType.findById(doc.DocType);
     //console.log(doctype);
-    const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : { ...doc._doc };
+    const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : null;
     //console.log(outputDoc);
     
     // if (doc.paidAt !== '') return outputDoc;
     // if (doc.completedAt !== '') return outputDoc;
     
-    return outputDoc;
+    if (outputDoc) return outputDoc;
   }));
   // console.log(processedDocs);
   processedDocs.forEach((outputDoc) => {
