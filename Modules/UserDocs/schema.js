@@ -22,15 +22,15 @@ const UserDocsSchema = Schema(
     payload: { type: Object, required: true },
     createdAt: { type: Date, get: (createdAt) => createdAt.toLocaleDateString("sp-MX"), immutable: true },
     editedAt: { type: Date, get: (editedAt) => editedAt.toLocaleDateString("sp-MX") },
-    completedAt: { type: Date, get: (completedAt) => completedAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
+    completedAt: { type: Date, default: '', get: (completedAt) => completedAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
       return validateDateUpdate(this.completedAt, value);
-    }, message: 'completedAt should not be updated after set' }, default: '' },
-    paidAt: { type: Date, get: (paidAt) => paidAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
+    }, message: 'completedAt should not be updated after set' } },
+    paidAt: { type: Date, default: '', get: (paidAt) => paidAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
       return validateDateUpdate(this.completedAt, value);
-    }, message: 'paidAtAt should not be updated after set' }, default: '' },
-    deletedAt: { type: Date, get: (deletedAt) => deletedAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
+    }, message: 'paidAtAt should not be updated after set' } },
+    deletedAt: { type: Date, default: '', get: (deletedAt) => deletedAt?.toLocaleDateString("sp-MX"), validate: { validator: function(value) {
       return validateDateUpdate(this.completedAt, value);
-    }, message: 'deletedAt should not be updated after set' }, default: '' },
+    }, message: 'deletedAt should not be updated after set' } },
     active: { type: Boolean, default: true }
   },
 );
