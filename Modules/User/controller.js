@@ -16,13 +16,13 @@ const jwt = require('../../lib/Auth/jwt');
 
 const checkEmailAvailable = async (req) => {
   const { payload } = req.body;
-  if (!payload) return new ClientError.BadRequestError('email not valid');
+  if (!payload) return new ClientError.ConflictError('email not valid');
   const { email } = payload;
-  if (!email) return new ClientError.BadRequestError('email not valid');
+  if (!email) return new ClientError.ConflictError('email not valid');
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  if (!emailRegex.test(email)) return new ClientError.BadRequestError('email not valid');;
+  if (!emailRegex.test(email)) return new ClientError.ConflictError('email not valid');;
   const emailInUsed = await User.findOne({ email, active: true });
-  if (emailInUsed) return new ClientError.BadRequestError('email not valid');
+  if (emailInUsed) return new ClientError.ConflictError('email not valid');
   return { message: 'email ok' };
 }
 
@@ -35,6 +35,7 @@ const getUserData = async (req) => {
   const editable = [];
   const completed = [];
   const paid = [];
+  // eslint-disable-next-line no-unused-vars
   const processDocument = async (doc) => {
     const doctype = await DocumentType.findById(doc.DocType.toString());
     const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
@@ -44,7 +45,16 @@ const getUserData = async (req) => {
     
     return outputDoc;
   };
-  const processedDocs = await Promise.all(docs.filter((doc) => doc.active === true).map(processDocument));
+  const filteredDocs = docs.filter((doc) => doc.active === true);
+  const processedDocs = await Promise.all(filteredDocs.map(async (doc) => {
+    const doctype = await DocumentType.findById(doc.DocType.toString());
+    const outputDoc = { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id };
+    
+    if (doc.paidAt !== '') return outputDoc;
+    if (doc.completedAt !== '') return outputDoc;
+    
+    return outputDoc;
+  }));
   processedDocs.forEach((outputDoc) => {
     if (outputDoc.paidAt) paid.push(outputDoc);
     else if (outputDoc.completedAt) completed.push(outputDoc);

@@ -62,7 +62,6 @@ const userSchema = new Schema({
     validate: {
       validator: function (value) {
         if (this.stripeCustomerId === '' && validator.isValidStripeCustomerId(value)) return true;
-        if (this.stripeCustomerId !== '') return false;
         return false;
       },
       message: 'stripeCustomerId cannot be updated'
