@@ -57,11 +57,11 @@ const getUserData = async (req) => {
   // })
   // console.log(filteredDocs);
   const processedDocs = await Promise.all(filteredDocs.map(async (doc) => {
-    console.log(doc.DocType);
+    //console.log(doc.DocType);
     const doctype = await DocumentType.findById(doc.DocType);
-    console.log(doctype);
-    const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : {};
-    console.log(outputDoc);
+    //console.log(doctype);
+    const outputDoc = doctype ? { ...doc._doc, DocType: doctype.type, DocTypeId: doctype._id } : { ...doc._doc };
+    //console.log(outputDoc);
     
     // if (doc.paidAt !== '') return outputDoc;
     // if (doc.completedAt !== '') return outputDoc;
