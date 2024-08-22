@@ -9,7 +9,8 @@ const {
 function validateDateUpdate (field, value) {
   const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}\+\d{2}:\d{2}$/;
   const isValidDateFormat = dateFormatRegex.test(value);
-  if ((!field && isValidDateFormat) || (field === '' && isValidDateFormat)) return true;
+  if (this.isNew) return true;
+  if (field === '' && isValidDateFormat) return true;
   return false;
 }
 
