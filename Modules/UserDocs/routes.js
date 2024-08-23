@@ -23,6 +23,6 @@ router.get('/', Auth.AccAuth, warpper(userDocController.getUserDoc));
 router.delete('/:docId([0-9a-fA-F]{24})', Auth.AccAuth, warpper(userDocController.deleteUserDoc));
 
 // get paid user doc PDF buffer
-router.get('/download', Auth.AccAuth, userDocController.getUserDocPDFBuffer);
+router.get('/download', Auth.AccAuth, warpper(userDocController.getUserDocPDFBuffer));
 
 module.exports = router;

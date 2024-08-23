@@ -98,7 +98,7 @@ const deleteUserDoc = async (req) => {
 }
 
 const getUserDocPDFBuffer = async (req, res) => {
-  // const { id } = req.user;
+  const { id } = req.user;
   const { docId } = req.query;
 
   const docRegex = /^([0-9a-fA-F]{24})$/;
@@ -110,9 +110,9 @@ const getUserDocPDFBuffer = async (req, res) => {
 
   if (!userDocData) return new ClientError.NotFoundError('No such user doc');
 
-  //if (userDocData.UserId.toString() !== id) return new ClientError.ForbiddenError('No access right');
+  if (userDocData.UserId.toString() !== id) return new ClientError.ForbiddenError('No access right');
 
-  // if (userDocData.paidAt === null) return new ClientError.ForbiddenError('This doc is not paid');
+  if (userDocData.paidAt === null) return new ClientError.ForbiddenError('This doc is not paid');
 
   const documentQuestions = userDocData.questions.map((doc) => {
     const output = { type: doc.type, question: doc.question, options: doc.options, order: doc.order };
