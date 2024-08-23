@@ -141,7 +141,7 @@ const changePassword = async (req) => {
   const passwordMatch = await bcrypt.compare(currentPassword, user.password);
   if (!passwordMatch) return new ClientError.BadRequestError('current Password not match');
 
-  const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
+  const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&?*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
   if (!passwordRegex.test(newPassword)) return new ClientError.BadRequestError('New password not valid');
 
   const newpassword = await bcrypt.hash(newPassword, 10);
@@ -164,15 +164,21 @@ const register = async (req) => {
   if (missingKeys.length > 0) return new ClientError.BadRequestError(`Missing required data: ${missingKeys.join(', ')}`);
 
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
+  const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&?*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
 
   const { email, password, info } = req.body;
 
   if (!emailRegex.test(email)) return new ClientError.BadRequestError('Not a valid email');
   if (!passwordRegex.test(password)) return new ClientError.BadRequestError('Not a valid password format');
 
-  const emailInUsed = await User.findOne({ email });
+  const atIndex = email.indexOf('@');
+  const localPart = email.substring(0, atIndex).toLowerCase();
+  const domainPart = email.substring(atIndex, email.length + 1);
+  const normalizedEmail = localPart + domainPart;
+
+  const emailInUsed = await User.findOne({ email: normalizedEmail, active: true });
   if (emailInUsed) return new ClientError.UnauthorizedError('This email is already registered');
+
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = new User({
     email,
@@ -211,7 +217,13 @@ const login = async (req, res) => {
 
   const { email, password } = req.body;
   if (!emailRegex.test(email)) return new ClientError.UnauthorizedError('login fail, email or password not valid');
-  const userExist = await User.findOne({ email, active: true }).select('_id email password stripeCustomerId refreshtoken info');
+
+  const atIndex = email.indexOf('@');
+  const localPart = email.substring(0, atIndex).toLowerCase();
+  const domainPart = email.substring(atIndex, email.length + 1);
+  const normalizedEmail = localPart + domainPart;
+
+  const userExist = await User.findOne({ email: normalizedEmail, active: true }).select('_id email password stripeCustomerId refreshtoken info');
   if (!userExist) return new ClientError.UnauthorizedError('login fail, email or password not valid');
   const passwordMatch = await bcrypt.compare(password, userExist.password);
   if (!passwordMatch) return new ClientError.UnauthorizedError('login fail, email or password not valid');

@@ -1,6 +1,8 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
+const http = require('http');
+const url = require('url');
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
@@ -96,7 +98,7 @@ const deleteUserDoc = async (req) => {
 }
 
 const getUserDocPDFBuffer = async (req, res) => {
-  const { id } = req.user;
+  // const { id } = req.user;
   const { docId } = req.query;
 
   const docRegex = /^([0-9a-fA-F]{24})$/;
@@ -108,9 +110,9 @@ const getUserDocPDFBuffer = async (req, res) => {
 
   if (!userDocData) return new ClientError.NotFoundError('No such user doc');
 
-  if (userDocData.UserId.toString() !== id) return new ClientError.ForbiddenError('No access right');
+  //if (userDocData.UserId.toString() !== id) return new ClientError.ForbiddenError('No access right');
 
-  if (userDocData.paidAt === null) return new ClientError.ForbiddenError('This doc is not paid');
+  // if (userDocData.paidAt === null) return new ClientError.ForbiddenError('This doc is not paid');
 
   const documentQuestions = userDocData.questions.map((doc) => {
     const output = { type: doc.type, question: doc.question, options: doc.options, order: doc.order };
@@ -124,7 +126,6 @@ const getUserDocPDFBuffer = async (req, res) => {
     const buffer = [];
     pdf.on('data', buffer.push.bind(buffer));
     pdf.on('end', () => {
-      // eslint-disable-next-line no-undef
       const pdfData = Buffer.concat(buffer);
       resolve(pdfData);
     });
@@ -150,7 +151,7 @@ const getUserDocPDFBuffer = async (req, res) => {
 
   // below will send a media type (whole pdf) as a response;
   // const pdfPath = path.join(pdfFolder, `${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`);
-  // const pdfExist = fs.createReadStream(pdfPath);
+  // const pdfExist = fs.createReadStream(pdfPath).on('end', () => fs.unlinkSync(path.join(pdfFolder, `${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`)));
   // if (!pdfExist) res.json({ message: 'No such pdf' })
   // if (pdfExist) {
   //   res.writeHead(200, {
