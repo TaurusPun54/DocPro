@@ -33,6 +33,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  unformattedEmail: {
+    type: String,
+    require: true,
+  },
   password: {
     type: String,
     required: true,

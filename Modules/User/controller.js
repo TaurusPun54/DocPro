@@ -176,7 +176,8 @@ const register = async (req) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = new User({
-    email,
+    email: email.toLowerCase(),
+    unformattedEmail: email,
     password: hashedPassword,
     info: info ?? {},
     role: 'user'
@@ -259,7 +260,7 @@ const changeEmail = async (req) => {
   if (emailInUsed) return new ClientError.ConflictError('This email already registered');
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   if (!emailRegex.test(newEmail)) return new ClientError.BadRequestError('This email not valid');
-  const updated = await User.findByIdAndUpdate(id, { $set: { email: newEmail } });
+  const updated = await User.findByIdAndUpdate(id, { $set: { email: newEmail.toLowerCase(), unformattedEmail: newEmail } });
   if (updated) return { message: 'email updated' };
 }
 
