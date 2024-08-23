@@ -20,8 +20,14 @@ const checkEmailAvailable = async (req) => {
   const { email } = payload;
   if (!email) return new ClientError.ConflictError('email not valid');
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  if (!emailRegex.test(email)) return new ClientError.ConflictError('email not valid');;
-  const emailInUsed = await User.findOne({ email, active: true });
+  if (!emailRegex.test(email)) return new ClientError.ConflictError('email not valid');
+
+  const atIndex = email.indexOf('@');
+  const localPart = email.substring(0, atIndex).toLowerCase();
+  const domainPart = email.substring(atIndex, email.length + 1);
+  const normalizedEmail = localPart + domainPart;
+
+  const emailInUsed = await User.findOne({ email: normalizedEmail, active: true });
   if (emailInUsed) return new ClientError.ConflictError('email not valid');
   return { message: 'email ok' };
 }
