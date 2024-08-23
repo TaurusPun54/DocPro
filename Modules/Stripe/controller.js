@@ -39,7 +39,9 @@ const listenWebHook = async (req) => {
     });
     await newCharge.save();
     const paymentIntentRecord = await PaymentIntent.findOne({ stripePaymentIntentId: chargeEvent.payment_intent })
-    await UserDoc.findByIdAndUpdate(paymentIntentRecord.userDocId, { $set: { paidAt: Date.now() } });
+    if (event.type === 'charge.succeeded') {
+      await UserDoc.findByIdAndUpdate(paymentIntentRecord.userDocId, { $set: { paidAt: Date.now() } });
+    }
   }else if (paymentIntentEvents.includes(event.type)) {
     console.log(`Event : ${event.type} is triggered`);
     const paymentIntentEvent = event.data.object;

@@ -14,6 +14,6 @@ const paymentIntentSchema = new Schema({
   amount: { type: Decimal128, required: true, immutable: true },
   currency: { type: String, required: true, immutable: true },
   status: { type: String }
-});
+}, { timestamps: true });
 
 module.exports = model('PaymentIntent', paymentIntentSchema);

@@ -26,11 +26,9 @@ const createPaymentIntent = async (req) => {
 
   const userdocData = await UserDoc.findById(docId);
   if (!userdocData) return new ClientError.NotFoundError('Not such user doc');
-  if (userdocData.paidAt !== '' && userdocData.paidAt !== null) return new ClientError.ForbiddenError('Cannot purchase a paid doc');
+  if (userdocData.paidAt !== null) return new ClientError.ForbiddenError('Cannot purchase a paid doc');
+  if (userdocData.completedAt === null) return new ClientError.ForbiddenError('This doc is not completed, purchase not allowed');
   if (userdocData.UserId.toString() !== id) return new ClientError.ForbiddenError('no access right');
-
-  // const errorArray = await validator.answerValidator(userdocData);
-  // if (errorArray.length !== 0) return new ClientError.BadRequestError(`Answers of no. ${errorArray.join(', ')} are invalid`);
 
   const documentType = await DocumentType.findOne({ _id: userdocData.DocType.toString(), active: true });
   // console.log(documentType)
