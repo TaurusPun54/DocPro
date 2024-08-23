@@ -7,7 +7,7 @@ const {
 const userChargeSchema = Schema({
   stripeChargeId: { type: String, required: true, unique: true, immutable: true },
   stripeCustomerId: { type: String, required: true, immutable: true},
-  stripeCustomerPaymentMethod: { type: String, required: true, unique: true, immutable: true},
+  stripeCustomerPaymentMethod: { type: String, required: true, immutable: true},
   status: { type: String }
 }, { timestamps: true });
 
