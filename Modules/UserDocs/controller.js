@@ -1,7 +1,11 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 const fs = require('fs');
+const path = require('path');
 const PDFDocument = require('pdfkit');
+
+const pdfFolder = 'pdfs';
 
 const UserDoc = require('./schema');
 const DocumentType = require('../DocumentTypes/schema');
@@ -91,7 +95,7 @@ const deleteUserDoc = async (req) => {
   if (toDelete) return { message: 'User doc deleted' };
 }
 
-const getUserDocPDFBuffer = async (req) => {
+const getUserDocPDFBuffer = async (req, res) => {
   const { id } = req.user;
   const { docId } = req.query;
 
@@ -106,7 +110,7 @@ const getUserDocPDFBuffer = async (req) => {
 
   if (userDocData.UserId.toString() !== id) return new ClientError.ForbiddenError('No access right');
 
-  // if (userDocData.paidAt === null) return new ClientError.ForbiddenError('This doc is not paid');
+  if (userDocData.paidAt === null) return new ClientError.ForbiddenError('This doc is not paid');
 
   const documentQuestions = userDocData.questions.map((doc) => {
     const output = { type: doc.type, question: doc.question, options: doc.options, order: doc.order };
@@ -124,7 +128,7 @@ const getUserDocPDFBuffer = async (req) => {
       const pdfData = Buffer.concat(buffer);
       resolve(pdfData);
     });
-    pdf.pipe(fs.createWriteStream(`${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`));
+    pdf.pipe(fs.createWriteStream(path.join(pdfFolder, `${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`)));
 
     pdf.fontSize(40).text(`${userDocData.docName ?? 'Unnamed Doc'}`, 100, 100);
     documentQuestions.forEach((question, i) => {
@@ -141,7 +145,22 @@ const getUserDocPDFBuffer = async (req) => {
     pdf.end();
   });
 
+  fs.unlinkSync(path.join(pdfFolder, `${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`));
   return { pdfbuffer };
+
+  // below will send a media type (whole pdf) as a response;
+  // const pdfPath = path.join(pdfFolder, `${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`);
+  // const pdfExist = fs.createReadStream(pdfPath);
+  // if (!pdfExist) res.json({ message: 'No such pdf' })
+  // if (pdfExist) {
+  //   res.writeHead(200, {
+  //     'Content-Type': 'application/pdf',
+  //     'Content-Disposition': `attachment; filename=${userDocData.docName ?? `Unnamed_${documentTypeName}`}.pdf`,
+  //     'Content-Transfer-Encoding': 'Binary'
+  //   });
+  
+  //   pdfExist.pipe(res); 
+  // }
 }
 
 module.exports = {
