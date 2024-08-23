@@ -84,20 +84,6 @@ userSchema.virtual('docs', {
   //options: { select: '-DocType' }
 })
 
-// userSchema.pre('save', function(next) {
-//   if (this.isModified('stripeCustomerId')) {
-//     const updatedStripeCustomerId = this.get('stripeCustomerId'); // Get the updating value
-//     return next(new ClientErrors.ForbiddenError('Cannot update stripeCustomerId.'));
-//   }
-//   next();
-// });
-
-// userSchema.post('validate', function(doc) {
-//   if (doc.isModified('stripeCustomerId')) {
-//     doc.stripeCustomerId = this._original.stripeCustomerId;
-//   }
-// });
-
 userSchema.methods.updateInfo = async function(newInfo) {
     Object.keys(newInfo).forEach((key) => {
       this[key] = newInfo[key];

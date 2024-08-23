@@ -16,7 +16,7 @@ const app = express();
 const warpper = require('./lib/Wrapper/wrapper')
 const stripeController = require('./Modules/Stripe/controller');
 // eslint-disable-next-line max-len
-app.post('/webhook', express.raw({ type: 'application/json' }), warpper(stripeController.listenWebHook));
+app.post('/webhook', express.raw({ type: 'application/json' }), stripeController.listenWebHook);
 
 app.use(cors());
 app.use(express.json());

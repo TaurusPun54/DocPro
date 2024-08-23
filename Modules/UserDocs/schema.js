@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 const {
@@ -12,11 +13,14 @@ const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors
 const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
 
 function validateDateUpdate (field, value) {
+  console.log(field);
+  console.log(value);
   const dateFormatRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
   const dateTimeString = new Date(value).toISOString();
   const isValidDateFormat = dateFormatRegex.test(dateTimeString);
+  console.log(isValidDateFormat);
   if (this.isNew) return true;
-  if ((field === null || field === '')) return true;
+  if ((field === null || field === '' || field === undefined) && isValidDateFormat) return true;
   return false;
 }
 
@@ -29,9 +33,9 @@ const UserDocsSchema = Schema(
     payload: { type: Object, required: true },
     createdAt: { type: Date, immutable: true },
     editedAt: { type: Date },
-    completedAt: { type: Date, default: '' },
-    paidAt: { type: Date, default: '' },
-    deletedAt: { type: Date, default: '' },
+    completedAt: { type: Date, default: null },
+    paidAt: { type: Date, default: null },
+    deletedAt: { type: Date, default: null },
     active: { type: Boolean, default: true }
   },
 );
