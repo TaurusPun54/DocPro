@@ -19,7 +19,7 @@ const checkEmailAvailable = async (req) => {
   if (!payload) return new ClientError.ConflictError('email not valid');
   const { email } = payload;
   if (!email) return new ClientError.ConflictError('email not valid');
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!emailRegex.test(email)) return new ClientError.ConflictError('email not valid');
   const emailInUsed = await User.findOne({ email: email.toLowerCase(), active: true });
   if (emailInUsed) return new ClientError.ConflictError('email not valid');
@@ -30,7 +30,6 @@ const getUserData = async (req) => {
   const { id } = req.user;
   if (!id) return new ClientError.UnauthorizedError('Unknown user');
   const data = await User.findById(id).populate('docs', '-payload -__v');
-  // console.log(data);
   const docs = data.docs ?? [];
   
   // docs.filter((doc) => doc.active === true);
@@ -163,7 +162,7 @@ const register = async (req) => {
   const missingKeys = requiredKeys.filter((field) => !incomeKeys.includes(field));
   if (missingKeys.length > 0) return new ClientError.BadRequestError(`Missing required data: ${missingKeys.join(', ')}`);
 
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   const passwordRegex = /^(?=.*\d)(?=.*[-_!@#$%^&?*])(?=.*[a-z])(?=.*[A-Z]).{8,16}$/;
 
   const { email, password, info } = req.body;
@@ -195,6 +194,7 @@ const register = async (req) => {
     id: user._id,
     customerId: user.stripeCustomerId ?? '',
     email: user.email,
+    unformattedEmail: user.unformattedEmail ?? user.email,
     info: user.info,
     accessToken: acctoken,
     refreshToken: reftoken
@@ -209,7 +209,7 @@ const login = async (req, res) => {
   const missingKeys = requiredKeys.filter((field) => !incomeKeys.includes(field));
   if (missingKeys.length > 0) return new ClientError.BadRequestError(`Missing required data: ${missingKeys.join(', ')}`);
 
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
   const { email, password } = req.body;
   if (!emailRegex.test(email)) return new ClientError.UnauthorizedError('login fail, email or password not valid');
@@ -256,10 +256,10 @@ const logout = async (req) => {
 const changeEmail = async (req) => {
   const { id } = req.user;
   const { newEmail } = req.body;
-  const emailInUsed = await User.findOne({ email: newEmail, active: true });
-  if (emailInUsed) return new ClientError.ConflictError('This email already registered');
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!emailRegex.test(newEmail)) return new ClientError.BadRequestError('This email not valid');
+  const emailInUsed = await User.findOne({ email: newEmail.toLowerCase(), active: true });
+  if (emailInUsed) return new ClientError.ConflictError('This email already registered');
   const updated = await User.findByIdAndUpdate(id, { $set: { email: newEmail.toLowerCase(), unformattedEmail: newEmail } });
   if (updated) return { message: 'email updated' };
 }
