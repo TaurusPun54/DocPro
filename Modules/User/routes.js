@@ -32,10 +32,10 @@ router.get('/', Auth.AccAuth, warpper(userController.getUserData));
 router.put('/', Auth.AccAuth, warpper(userController.updateUserInfo));
 
 // update user by patch
-router.patch('/', Auth.AccAuth, warpper(userController.updateUserInfoByPatch));
+// router.put('/', Auth.AccAuth, warpper(userController.updateUserInfo));
 
-// forget and edit password
-router.post('/forgetPassword', Auth.AccAuth, warpper(userController.changePassword));
+// change password
+router.post('/changePassword', Auth.AccAuth, warpper(userController.changePassword));
 
 // delete user
 router.delete('/', Auth.AccAuth, warpper(userController.deleteUser));
@@ -44,6 +44,6 @@ router.delete('/', Auth.AccAuth, warpper(userController.deleteUser));
 router.get('/refreshTokenRotation', warpper(RefreshRotation));
 
 // change email
-router.patch('/updateEmail', Auth.AccAuth, warpper(userController.changeEmail));
+// router.patch('/updateEmail', Auth.AccAuth, warpper(userController.changeEmail));
 
 module.exports = router;

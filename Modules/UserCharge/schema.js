@@ -8,7 +8,7 @@ const userChargeSchema = Schema({
   stripeChargeId: { type: String, required: true, unique: true, immutable: true },
   stripeCustomerId: { type: String, required: true, immutable: true},
   stripeCustomerPaymentMethod: { type: String, required: true, immutable: true},
-  status: { type: String }
+  status: { type: String, required: true, immutable: true }
 }, { timestamps: true });
 
 module.exports = model('UserCharge', userChargeSchema);

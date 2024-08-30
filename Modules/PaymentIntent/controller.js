@@ -1,109 +1,88 @@
 /* eslint-disable no-undef */
 /* eslint-disable max-len */
-/* eslint-disable no-unused-vars */
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
-const validator = require('../../lib/Validator/validator');
-
-// database
 const User = require('../User/schema');
-const UserDoc = require('../UserDocs/schema');
-const DocumentType = require('../DocumentTypes/schema');
+const UserDocument = require('../UserDocument/schema');
+const Document = require('../Document/schema');
 const PaymentIntent = require('../PaymentIntent/schema');
-
-const httpStatusCodes = require('../../lib/Error/HttpErrors/httpstatuscodes');
-
-// error
-const ClientError = require('../../lib/Error/HttpErrors/ClientError/ClientErrors');
-const ServerError = require('../../lib/Error/HttpErrors/ServerError/ServerErrors');
+const { BadRequestError, ForbiddenError, NotFoundError, InternalServerError } = require('../../lib/Error/HttpErrors/index');
 
 const createPaymentIntent = async (req) => {
   const { id, email, stripeCustomerId } = req.user;
-  const { docId } = req.params;
-  if (!docId) return new ClientError.NotFoundError('Not such user doc');
+  const { userDocumentId } = req.params;
 
-  const userdocData = await UserDoc.findById(docId);
-  if (!userdocData) return new ClientError.NotFoundError('Not such user doc');
-  if (userdocData.UserId.toString() !== id) return new ClientError.ForbiddenError('no access right');
-  if (userdocData.paidAt !== null) return new ClientError.ForbiddenError('Cannot purchase a paid doc');
-  if (userdocData.completedAt === null) return new ClientError.ForbiddenError('This doc is not completed, purchase not allowed');
+  if (!userDocumentId) return new NotFoundError('Not such user document');
 
-  const documentType = await DocumentType.findOne({ _id: userdocData.DocType.toString(), active: true });
-  // console.log(documentType)
-  if (!documentType) return new ClientError.BadRequestError('This document are not valid');
+  const userDocumentData = await UserDocument.findById(userDocumentId);
 
-  // if (userdocData.completedAt === null || userdocData.completedAt === '') {
-  //   await UserDoc.findByIdAndUpdate(docId, { $set: { completedAt: Date.now() } })
-  // }
+  if (!userDocumentData) return new NotFoundError('Not such user document');
+  if (userDocumentData.UserId.toString() !== id) return new ForbiddenError('No access right');
+  if (userDocumentData.paidAt !== null) return new ForbiddenError('Cannot purchase a paid document');
+  if (userDocumentData.completedAt === null) return new ForbiddenError('This document is not completed, purchase not allowed');
+
+  const document = await Document.findOne({ _id: userDocumentData.DocumentId.toString(), active: true });
+  // console.log(document)
+  if (!document) return new BadRequestError('This user document are not valid');
 
   let customer = {};
   if (stripeCustomerId === '' || !stripeCustomerId) {
     customer = await stripe.customers.create({
       email: email,
     });
-    // console.log(customer.id);
     await User.findByIdAndUpdate(id, { stripeCustomerId: customer.id });
-    // const user = User.findById(id).select('+stripeCustomerId');
-    // return user;
   }
   // return { message: `user with customerId: ${stripeCustomerId} started a payment intent` };
   const customerId = customer.id ?? stripeCustomerId;
+
   const ephemeralKey = await stripe.ephemeralKeys.create(
     {customer: customerId},
-    {apiVersion: '2024-06-20'}
+    {apiVersion: process.env.STRIPE_EPHEMERALKEY_API_VERSION || '2024-06-20'}
   );
+
   const paymentIntent = await stripe.paymentIntents.create({
     // payment_method_types: ['card', 'apple_pay'],
-    amount: parseInt(documentType.price.toString(), 10) * 100,
-    currency: documentType.currency,
+    amount: parseFloat(document.price.toString()) * 100,
+    currency: document.currency,
     customer: customerId,
     // eslint-disable-next-line camelcase
     automatic_payment_methods: {
       enabled: true,
     },
-    description: `Purchase product: ${userdocData.docName}`,
-    metadata: {
-      userDocId: docId
-    },
   });
 
-  if (!paymentIntent || !ephemeralKey || !customerId) return new ServerError.InternalServerError('Cannot start a payment intent');
+  if (!paymentIntent || !ephemeralKey || !customerId) return new InternalServerError(`Fail to start a new payment intent`);
 
   const newPaymentIntent = new PaymentIntent({
     stripePaymentIntentId: paymentIntent.id,
-    stripePaymentIntentClientSecret: paymentIntent.client_secret,
+    // stripePaymentIntentClientSecret: paymentIntent.client_secret,
     stripeCustomerId: customerId,
     stripeCustomerEphemeralKey: ephemeralKey.secret,
-    userDocId: docId,
-    amount: parseInt(documentType.price.toString(), 10),
-    currency: documentType.currency,
+    userDocumentId: userDocumentId,
+    amount: parseFloat(document.price.toString()),
+    currency: document.currency,
     status: paymentIntent.status
   });
   
   await newPaymentIntent.save();
 
   return {
-    data: {
-      paymentIntentClientSecret: paymentIntent.client_secret,
-      customerEphemeralKeySecret: ephemeralKey.secret,
-      customerId
-    }
+    paymentIntentClientSecret: paymentIntent.client_secret,
+    customerEphemeralKeySecret: ephemeralKey.secret,
+    customerId
   }
 };
 
 const getPaymentIntent = async (req) => {
-  const { id, stripeCustomerId } = req.user;
-  const { paymentIntentId } = req.query;
+  const { stripeCustomerId } = req.user;
+  const { stripePaymentIntentId } = req.query;
   const regex = /^pi_[\w\d]{24}$/;
-  if (!paymentIntentId || !regex.test(paymentIntentId)) return new ClientError.BadRequestError('Not a valid payment intent id');
-  const record = await PaymentIntent.findOne({ stripePaymentIntentId: paymentIntentId });
-  if (!record) return new ClientError.NotFoundError('No such payment intent record');
-  if (record.stripeCustomerId !== stripeCustomerId) return new ClientError.ForbiddenError('No access right');
-  // if (record.status === 'requires_payment_method') return { message: 'Order still processing' }; statusCode: httpStatusCodes.Accepted,
-  // if (record.status === 'succeeded') return {  }
-  return { data: record };
+  if (!stripePaymentIntentId || !regex.test(stripePaymentIntentId)) return new NotFoundError('No such payment intent record');
+  const record = await PaymentIntent.findOne({ stripePaymentIntentId }).select('-stripeCustomerEphemeralKey');
+  if (!record) return new NotFoundError('No such payment intent record');
+  if (record.stripeCustomerId !== stripeCustomerId) return new ForbiddenError('No access right');
+  return { ...record._doc, amount: parseFloat(record.amount.toString()) };
 }
 
 module.exports = {

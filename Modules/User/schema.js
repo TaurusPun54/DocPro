@@ -32,10 +32,8 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-  },
-  unformattedEmail: {
-    type: String,
-    require: true,
+    unique: true,
+    immutable: true,
   },
   password: {
     type: String,
@@ -80,13 +78,6 @@ const userSchema = new Schema({
     default: true
   }
 }, { timestamps: true });
-
-userSchema.virtual('docs', {
-  ref: 'UserDoc',
-  localField: '_id',
-  foreignField: 'UserId',
-  //options: { select: '-DocType' }
-})
 
 userSchema.methods.updateInfo = async function(newInfo) {
     Object.keys(newInfo).forEach((key) => {
